@@ -1,4 +1,4 @@
-package com.payflow.transaction_service.controller;
+package com.payflow.transaction_service.controllers;
 
 import com.payflow.transaction_service.entities.Transaction;
 import com.payflow.transaction_service.services.TransactionService;
