@@ -1,7 +1,10 @@
 package com.payflow.user_service.services;
 
+import com.payflow.user_service.dtos.UserRequestDTO;
+import com.payflow.user_service.dtos.UserResponseDTO;
 import com.payflow.user_service.entities.User;
 import com.payflow.user_service.entities.UserType;
+import com.payflow.user_service.mappers.UserMapper;
 import com.payflow.user_service.respositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -15,21 +18,36 @@ public class UserService {
     @Autowired
     private UserRepository repository;
 
-    public User saveUser(User user) {
+    public UserResponseDTO saveUser(UserRequestDTO dto) {
+        User user = UserMapper.toEntity(dto);
+        User saved = saveUserEntity(user);
+        return UserMapper.toDto(saved);
+    }
+
+    public User saveUserEntity(User user) {
         repository.save(user);
         return user;
     }
 
-    public User getUserById(Long id) throws Exception {
-        return repository.findById(id).orElseThrow(() -> new Exception("Usuário não encontrado."));
+    public UserResponseDTO getUserById(Long id) throws Exception {
+        User user = getUserEntityById(id);
+        return UserMapper.toDto(user);
     }
 
-    public List<User> getAllUsers() {
-        return repository.findAll();
+    public User getUserEntityById(Long id) throws Exception {
+        return repository.findById(id)
+                .orElseThrow(() -> new Exception("Usuário não encontrado."));
+    }
+
+    public List<UserResponseDTO> getAllUsers() {
+        return repository.findAll()
+                .stream()
+                .map(UserMapper::toDto)
+                .toList();
     }
 
     public Boolean canTransfer(Long id, BigDecimal amount) throws Exception {
-        User sender = getUserById(id);
+        User sender = getUserEntityById(id);
 
         if (sender.getType() == UserType.MERCHANT) {
             throw new Exception("Usuário do tipo lojista não esta autorizado a realizar uma transação.");
@@ -43,14 +61,13 @@ public class UserService {
     }
 
     public void updateBalance(Long senderId, Long receiverId, BigDecimal amount) throws Exception {
-        User sender = getUserById(senderId);
-        User receiver = getUserById(receiverId);
+        User sender = getUserEntityById(senderId);
+        User receiver = getUserEntityById(receiverId);
 
         sender.setBalance(sender.getBalance().subtract(amount));
-        receiver.setBalance((sender).getBalance().add(amount));
+        receiver.setBalance(receiver.getBalance().add(amount));
 
-        saveUser(sender);
-        saveUser(receiver);
-
+        saveUserEntity(sender);
+        saveUserEntity(receiver);
     }
 }
