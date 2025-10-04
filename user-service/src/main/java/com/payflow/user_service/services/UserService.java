@@ -4,6 +4,9 @@ import com.payflow.user_service.dtos.UserRequestDTO;
 import com.payflow.user_service.dtos.UserResponseDTO;
 import com.payflow.user_service.entities.User;
 import com.payflow.user_service.entities.UserType;
+import com.payflow.user_service.exceptions.InsufficientBalanceException;
+import com.payflow.user_service.exceptions.MerchantNotAllowedException;
+import com.payflow.user_service.exceptions.UserNotFoundException;
 import com.payflow.user_service.mappers.UserMapper;
 import com.payflow.user_service.respositories.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -29,14 +32,14 @@ public class UserService {
         return user;
     }
 
-    public UserResponseDTO getUserById(Long id) throws Exception {
+    public UserResponseDTO getUserById(Long id) {
         User user = getUserEntityById(id);
         return UserMapper.toDto(user);
     }
 
-    public User getUserEntityById(Long id) throws Exception {
+    public User getUserEntityById(Long id) {
         return repository.findById(id)
-                .orElseThrow(() -> new Exception("Usuário não encontrado."));
+                .orElseThrow(() -> new UserNotFoundException("Usuário não encontrado."));
     }
 
     public List<UserResponseDTO> getAllUsers() {
@@ -46,21 +49,21 @@ public class UserService {
                 .toList();
     }
 
-    public Boolean canTransfer(Long id, BigDecimal amount) throws Exception {
+    public Boolean canTransfer(Long id, BigDecimal amount)  {
         User sender = getUserEntityById(id);
 
         if (sender.getType() == UserType.MERCHANT) {
-            throw new Exception("Usuário do tipo lojista não esta autorizado a realizar uma transação.");
+            throw new MerchantNotAllowedException("Usuário do tipo lojista não esta autorizado a realizar uma transação.");
         }
 
         if (sender.getBalance().compareTo(amount) < 0) {
-            throw new Exception("Saldo insuficiente.");
+            throw new InsufficientBalanceException("Saldo insuficiente.");
         }
 
         return true;
     }
 
-    public void updateBalance(Long senderId, Long receiverId, BigDecimal amount) throws Exception {
+    public void updateBalance(Long senderId, Long receiverId, BigDecimal amount) {
         User sender = getUserEntityById(senderId);
         User receiver = getUserEntityById(receiverId);
 

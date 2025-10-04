@@ -2,8 +2,8 @@ package com.payflow.user_service.controllers;
 
 import com.payflow.user_service.dtos.UserRequestDTO;
 import com.payflow.user_service.dtos.UserResponseDTO;
-import com.payflow.user_service.entities.User;
 import com.payflow.user_service.services.UserService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -21,12 +21,12 @@ public class UserController {
     private UserService service;
 
     @PostMapping
-    public ResponseEntity<UserResponseDTO> createUser(@RequestBody UserRequestDTO dto) {
+    public ResponseEntity<UserResponseDTO> createUser(@RequestBody @Valid UserRequestDTO dto) {
         return new ResponseEntity<>(service.saveUser(dto), HttpStatus.CREATED);
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<UserResponseDTO> GetUserById(@PathVariable Long id) throws Exception {
+    public ResponseEntity<UserResponseDTO> GetUserById(@PathVariable Long id) {
         return new ResponseEntity<>(service.getUserById(id), HttpStatus.OK);
     }
 
@@ -38,7 +38,7 @@ public class UserController {
     @GetMapping("/{id}/can-transfer")
     public ResponseEntity<Boolean> canTransfer(
             @PathVariable Long id,
-            @RequestParam BigDecimal amount) throws Exception {
+            @RequestParam BigDecimal amount) {
         return new ResponseEntity<>(service.canTransfer(id, amount), HttpStatus.OK);
     }
 
@@ -46,7 +46,7 @@ public class UserController {
     public ResponseEntity<Void> updateBalance(
             @RequestParam Long senderId,
             @RequestParam Long receiverId,
-            @RequestParam BigDecimal amount) throws Exception {
+            @RequestParam BigDecimal amount) {
         service.updateBalance(senderId, receiverId, amount);
         return new ResponseEntity<>(HttpStatus.OK);
     }
