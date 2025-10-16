@@ -2,6 +2,7 @@ package com.payflow.transaction_service.controllers;
 
 import com.payflow.transaction_service.entities.Transaction;
 import com.payflow.transaction_service.services.TransactionService;
+import jakarta.validation.Valid;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,7 +19,7 @@ public class TransactionController {
     public TransactionService service;
 
     @PostMapping
-    public ResponseEntity<Transaction> createTransaction(@RequestBody Transaction transaction) throws Exception {
+    public ResponseEntity<Transaction> createTransaction(@Valid @RequestBody Transaction transaction) throws Exception {
         return new ResponseEntity<>(service.createTransaction(transaction), HttpStatus.CREATED);
     }
 
