@@ -13,7 +13,7 @@
     <artifactId>transaction-service</artifactId>
     <version>0.0.1-SNAPSHOT</version>
     <name>transaction-service</name>
-    <description>User Service para PayFlow Simplificado</description>
+    <description>Transaction Service para PayFlow Simplificado</description>
     <url/>
 
     <licenses>
