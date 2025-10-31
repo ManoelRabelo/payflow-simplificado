@@ -24,7 +24,7 @@ public class TransactionController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<Transaction> GetTransactionById(@PathVariable Long id) throws Exception {
+    public ResponseEntity<Transaction> getTransactionById(@PathVariable Long id) throws Exception {
         return new ResponseEntity<>(service.getTransactionById(id), HttpStatus.OK);
     }
 
