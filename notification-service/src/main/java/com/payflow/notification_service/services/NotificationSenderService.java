@@ -5,8 +5,6 @@ import com.payflow.notification_service.entities.Notification;
 import com.payflow.notification_service.entities.NotificationStatus;
 import com.payflow.notification_service.respositories.NotificationRepository;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 import org.springframework.web.client.RestClientException;
@@ -23,38 +21,44 @@ public class NotificationSenderService {
     @Autowired
     public RestTemplate restTemplate;
 
-    @Async
+    @Async("notificationExecutor")
     public void sendAsync(Notification notification) {
-        try {
-            send(notification);
-        } catch (Exception exception) {
-            throw new RuntimeException(exception.getMessage());
-        }
+        send(notification);
+    }
+
+    @Async("notificationExecutor")
+    public void retryAsync(Notification notification) {
+        send(notification);
     }
 
     private void send(Notification notification) {
-        String url = "https://util.devi.tools/api/v1/notify";
-
         notification.setLastAttemptAt(LocalDateTime.now());
-
-        NotificationMessageDTO payload = new NotificationMessageDTO(
-                notification.getRecipientEmail(),
-                notification.getMessage()
-        );
+        notification.setAttemptCount(notification.getAttemptCount() + 1);
 
         try {
-            ResponseEntity<Void> response = restTemplate.postForEntity(url, payload, Void.class);
+            String url = "https://util.devi.tools/api/v1/notify";
+            NotificationMessageDTO payload = new NotificationMessageDTO(
+                    notification.getRecipientEmail(),
+                    notification.getMessage()
+            );
 
-            if (response.getStatusCode() == HttpStatus.NO_CONTENT) {
-                notification.setStatus(NotificationStatus.SUCCESS);
-            } else {
-                notification.setStatus(NotificationStatus.FAILED);
-            }
+            restTemplate.postForEntity(url, payload, Void.class);
+
+            notification.setStatus(NotificationStatus.SUCCESS);
+            System.out.printf("Id: %d - Tentativas: %d - Mensagem enviada com sucesso.%n",
+                    notification.getId(), notification.getAttemptCount());
         } catch (RestClientException exception) {
-            notification.setStatus(NotificationStatus.FAILED);
-            throw new RuntimeException("Error: " + exception.getMessage());
+            if (notification.getAttemptCount() >= 3) {
+                notification.setStatus(NotificationStatus.FAILED);
+                System.out.printf("Id: %d - Tentativas: %d - Limite excedido.%n",
+                        notification.getId(), notification.getAttemptCount());
+            } else {
+                notification.setStatus(NotificationStatus.PENDING);
+                System.out.printf("Id: %d - Tentativas: %d - Erro no envio. Tentará novamente.%n",
+                        notification.getId(), notification.getAttemptCount());
+            }
+        } finally {
+            repository.save(notification);
         }
-
-        repository.save(notification);
     }
 }

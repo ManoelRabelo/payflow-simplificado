@@ -35,7 +35,8 @@ public class NotificationService {
                 notification.getStatus(),
                 notification.getTransactionTimeStamp(),
                 notification.getCreatedAt(),
-                notification.getLastAttemptAt()
+                notification.getLastAttemptAt(),
+                notification.getAttemptCount()
         );
     }
 
@@ -52,7 +53,10 @@ public class NotificationService {
                         notification.getStatus(),
                         notification.getTransactionTimeStamp(),
                         notification.getCreatedAt(),
-                        notification.getLastAttemptAt()))
+                        notification.getLastAttemptAt(),
+                        notification.getAttemptCount()
+                        )
+                )
                 .toList();
     }
 
@@ -69,6 +73,7 @@ public class NotificationService {
                 .transactionTimeStamp(request.transactionTimestamp())
                 .createdAt(now)
                 .lastAttemptAt(null)
+                .attemptCount(0)
                 .build();
 
         Notification receiverNotification = Notification.builder()
@@ -81,6 +86,7 @@ public class NotificationService {
                 .transactionTimeStamp(request.transactionTimestamp())
                 .createdAt(now)
                 .lastAttemptAt(null)
+                .attemptCount(0)
                 .build();
 
         repository.save(senderNotification);

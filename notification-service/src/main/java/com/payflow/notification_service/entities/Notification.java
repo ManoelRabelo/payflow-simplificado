@@ -47,5 +47,5 @@ public class Notification {
     private LocalDateTime createdAt;
 
     private LocalDateTime lastAttemptAt;
-
+    private Integer attemptCount;
 }

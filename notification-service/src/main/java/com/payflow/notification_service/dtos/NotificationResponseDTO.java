@@ -15,6 +15,7 @@ public record NotificationResponseDTO(
         NotificationStatus status,
         LocalDateTime transactionTimestamp,
         LocalDateTime createdAt,
-        LocalDateTime lastAttemptAt
+        LocalDateTime lastAttemptAt,
+        Integer attemptCount
 ) {
 }
